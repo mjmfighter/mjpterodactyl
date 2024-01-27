@@ -1,16 +1,70 @@
-# Repository Name
 
-This repository contains the code for the Pterodactyl Panel.  It contains a modified version of the docker-compose file from the pterodactyl github repository.  This one adds support for automatically creating and renewing LetsEncrypt SSL certificates
+# Docker Compose Configuration
+
+This repository contains a Docker Compose configuration for setting up a multi-service environment with `nginx-proxy`, `acme-companion`, a `database` service, and a `panel` service.
 
 ## Prerequisites
 
-- Docker installed: Please make sure Docker is installed on your system before proceeding. For instructions on how to install Docker on Linux, please refer to the official Docker documentation: [Install Docker on Linux](https://docs.docker.com/engine/install/#server)
+Before you begin, make sure you have Docker and Docker Compose installed on your system. For instructions on how to install Docker on Linux, please refer to the official Docker documentation: [Install Docker on Linux](https://docs.docker.com/engine/install/
 
-## Getting Started
+## Cloning the Repository
 
-To start the Pterodactyl Panel, follow these steps:
+First, download or clone this repository to your local machine:
 
-1. Clone this repository to your local machine.
-2. Install the necessary dependencies.
-3. Run `docker compose pull` to pull the latest versions of the docker containers
-4. Run `docker compose up -d` to start all the services
+```bash
+git clone [<REPOSITORY_URL>](https://github.com/mjmfighter/mjpterodactyl.git)
+cd mjpterodactyl
+```
+
+## Configuration
+
+1. **Environment Variables:** 
+   - Navigate to the `x-common` section in the `docker-compose.yml` file.
+   - Update the environment variables under `database`, `panel`, and `mail` as per your requirements.
+
+## Starting the Services
+
+After configuring the environment variables, you can start the services using Docker Compose:
+
+```bash
+docker compose up -d
+```
+
+This command will start all the services defined in the `docker-compose.yml` file in detached mode.
+
+### Post first time startup 
+
+After starting the services for the first time, you will need to create a user in the panel.  You can do so with the following command:
+
+```bash
+docker compose exec panel php artisan p:user:make
+```
+
+After the user has been created, you can visit the site and login.
+
+## Stopping the Services
+
+To stop the services, use the following command:
+
+```bash
+docker compose down
+```
+
+## Updating the Services
+
+To update the services, use the following commands:
+
+```bash
+docker compose pull
+docker compose down
+docker compose up -d
+```
+
+## Additional Information
+
+- Ensure that the network configurations and volume mappings in the `docker-compose.yml` file match your system's setup.
+- For detailed information about each service configuration, refer to their respective documentation.
+
+## Support
+
+For any assistance or queries, please refer to the documentation or open an issue in the repository.

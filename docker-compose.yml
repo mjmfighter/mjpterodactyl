@@ -58,10 +58,10 @@ services:
       - database
       - cache
     volumes:
-      - "./data/var/:/app/var/"
-      - "./data/nginx/:/etc/nginx/http.d/"
-      - "./data/certs/:/etc/letsencrypt/"
-      - "./data/logs/:/var/log/"
+      - "./data/panel/var/:/app/var/"
+      - "./data/panel/nginx/:/etc/nginx/http.d/"
+      - "./data/panel/certs/:/etc/letsencrypt/"
+      - "./data/panel/logs/:/var/log/"
     environment:
       <<: [*panel-environment, *mail-environment]
       DB_PASSWORD: *db-password
