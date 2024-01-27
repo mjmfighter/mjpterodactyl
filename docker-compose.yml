@@ -110,7 +110,6 @@ services:
 networks:
   panel:
   nginx:
-    external: true
     name: nginx-proxy
   default:
     ipam:
