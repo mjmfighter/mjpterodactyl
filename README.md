@@ -12,7 +12,7 @@ Before you begin, make sure you have Docker and Docker Compose installed on your
 First, download or clone this repository to your local machine:
 
 ```bash
-git clone [<REPOSITORY_URL>](https://github.com/mjmfighter/mjpterodactyl.git)
+git clone https://github.com/mjmfighter/mjpterodactyl.git
 cd mjpterodactyl
 ```
 
