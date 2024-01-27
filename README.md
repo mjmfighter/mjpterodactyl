@@ -30,11 +30,17 @@ After configuring the environment variables, you can start the services using Do
 docker compose up -d
 ```
 
-This command will start all the services defined in the `docker-compose.yml` file in detached mode.
+This command will start all the services defined in the `docker-compose.yml` file.
 
-### Post first time startup 
+### Post first time startup
 
-After starting the services for the first time, you will need to create a user in the panel.  You can do so with the following command:
+The inital startup of the panel service can take a few minutes, as it is creating all the database tables and default configuration settings.  To monitor the panel startup process, you can run the following command:
+
+```bash
+docker compose logs panel
+```
+
+After the panel is started and can be seen properly at your desired URL, you will need to create a user in the panel.  You can do so with the following command:
 
 ```bash
 docker compose exec panel php artisan p:user:make
