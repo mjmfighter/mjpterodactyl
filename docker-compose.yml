@@ -1,0 +1,118 @@
+
+version: "3.8"
+
+x-common:
+  database:
+    &db-environment
+    MYSQL_PASSWORD: &db-password "DBPass"
+    MYSQL_ROOT_PASSWORD: "DBRootPass"
+  panel:
+    &panel-environment
+    APP_URL: "https://panel.example.com"
+    APP_TIMEZONE: "America/Chicago"
+    APP_SERVICE_AUTHOR: "webmaster@example.com"
+    VIRTUAL_HOST: panel.example.com 
+    VIRTUAL_PORT: 80
+    LETSENCRYPT_HOST: panel.example.com
+    LETSENCRYPT_EMAIL: webmaster@example.com
+  mail:
+    &mail-environment
+    MAIL_FROM: "noreply@example.com"
+    MAIL_DRIVER: "smtp"
+    MAIL_HOST: "mail.example.com"
+    MAIL_PORT: "465"
+    MAIL_USERNAME: "noreply@example.com"
+    MAIL_PASSWORD: "mailpass"
+    MAIL_ENCRYPTION: "true"
+  acme:
+    &acme-environment
+    DEFAULT_EMAIL: "web@example.com"
+
+services:
+  database:
+    image: mariadb
+    restart: always
+    volumes:
+      - "./data/database:/var/lib/mysql"
+    environment:
+      <<: *db-environment
+      MYSQL_DATABASE: "panel"
+      MYSQL_USER: "pterodactyl"
+      MARIADB_AUTO_UPGRADE: "1"
+      MARIADB_INITDB_SKIP_TZINFO: "1"
+    networks: 
+      - panel
+
+  cache:
+    image: redis:alpine
+    restart: always
+    networks: 
+      - panel
+
+  panel:
+    image: ghcr.io/pterodactyl/panel:latest
+    restart: always
+    expose:
+      - "80"
+    links:
+      - database
+      - cache
+    volumes:
+      - "./data/var/:/app/var/"
+      - "./data/nginx/:/etc/nginx/http.d/"
+      - "./data/certs/:/etc/letsencrypt/"
+      - "./data/logs/:/var/log/"
+    environment:
+      <<: [*panel-environment, *mail-environment]
+      DB_PASSWORD: *db-password
+      APP_ENV: "production"
+      APP_ENVIRONMENT_ONLY: "false"
+      CACHE_DRIVER: "redis"
+      SESSION_DRIVER: "redis"
+      QUEUE_DRIVER: "redis"
+      REDIS_HOST: "cache"
+      DB_HOST: "database"
+    networks: 
+      - nginx
+      - panel
+
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy
+    container_name: nginx-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./conf.d:/etc/nginx/conf.d
+      - ./vhost.d:/etc/nginx/vhost.d
+      - ./html:/usr/share/nginx/html
+      - ./certs:/etc/nginx/certs:ro
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    networks:
+      - nginx
+
+  acme-companion:
+    image: nginxproxy/acme-companion
+    container_name: nginx-proxy-acme
+    environment:
+      <<: *acme-environment
+    restart: unless-stopped
+    volumes_from:
+      - nginx-proxy
+    volumes:
+      - ./certs:/etc/nginx/certs:rw
+      - ./acme:/etc/acme.sh
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - nginx
+
+networks:
+  panel:
+  nginx:
+    external: true
+    name: nginx-proxy
+  default:
+    ipam:
+      config:
+        - subnet: 172.30.0.0/16
